@@ -237,8 +237,7 @@ namespace CardDataDumper.Dumper
             {
                 // Create empty image.
                 var gif = Image.Load(images[0], new PngDecoder());
-                gif = gif.Clone(x => x.Crop(100, 100));
-                // CropExtensions.Crop(gif, 10, 10);
+                // gif = gif.Clone(x => x.Crop(100, 100));
 
                 // Set animation loop repeat count to 5.
                 var gifMetaData = gif.Metadata.GetGifMetadata();
@@ -253,7 +252,7 @@ namespace CardDataDumper.Dumper
                     {
                         // Create a color image, which will be added to the gif.
                         var image = Image.Load(images[i], new PngDecoder());
-                        image = image.Clone(x => x.Crop(100, 100));
+                        // image = image.Clone(x => x.Crop(100, 100));
 
                         // Set the delay until the next image is displayed.
                         metadata = image.Frames.RootFrame.Metadata.GetGifMetadata();
