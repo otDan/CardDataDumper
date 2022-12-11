@@ -18,6 +18,7 @@ using System.Text;
 using System.Threading;
 using CardDataDumper.Config;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 using UnboundLib.Cards;
 using UnboundLib.Utils;
 using UnityEngine;
@@ -165,22 +166,6 @@ namespace CardDataDumper.Dumper
             lightCamObj.GetComponent<SFRenderer>().enabled = false;
         }
 
-        // Seems that you do not use this, guessing cause it's replaced directly in the card source
-        // public void GetModData()
-        // {
-        //     var cards = ((List<CardInfo>) typeof(Cards).GetField("hiddenCards", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(Cards.instance)).ToList();
-        //     cards.AddRange(allCards);
-        //     cards.ForEach(c => GetCardSource(c));
-        //     UnityEngine.Debug.Log("Writing");
-        //     string ModData = "{\"Mods\":[";
-        //     modUrls.Keys.ToList().ForEach(mod => {
-        //         ModData += $"{{\"Mod\":\"{mod}\",\"Url\":\"{modUrls[mod]}\"}},";
-        //     });
-        //     ModData = ModData.Substring(0, ModData.Length - 1) + "]}";
-        //     File.WriteAllText(Path.Combine(jsonsPath, "mods.json"), ModData);
-        //     UnityEngine.Debug.Log("done");
-        // }
-
         private void GetMapData()
         {
             foreach(string map in LevelManager.levels.Keys)
@@ -219,7 +204,6 @@ namespace CardDataDumper.Dumper
             setScaleToZero.enabled = false;
 
             cardObject.gameObject.GetComponentInChildren<CardVisuals>().firstValueToSet = true;
-            // cardObject.transform.localScale = Vector3.one * 2;
             var canvas = cardObject.GetComponentInChildren<Canvas>();
             canvas.transform.localScale *= 2f; 
 
@@ -234,6 +218,7 @@ namespace CardDataDumper.Dumper
                 }
             }
 
+            // Wait for the card to appear presentable
             for(int _ = 0; _< 5; _++) yield return null;
 
             var images = new List<byte[]>();
@@ -252,7 +237,7 @@ namespace CardDataDumper.Dumper
             {
                 // Create empty image.
                 var gif = Image.Load(images[0], new PngDecoder());
-                // gif.Mutate(x => x.Crop());
+                gif = gif.Clone(x => x.Crop(100, 100));
                 // CropExtensions.Crop(gif, 10, 10);
 
                 // Set animation loop repeat count to 5.
@@ -268,6 +253,7 @@ namespace CardDataDumper.Dumper
                     {
                         // Create a color image, which will be added to the gif.
                         var image = Image.Load(images[i], new PngDecoder());
+                        image = image.Clone(x => x.Crop(100, 100));
 
                         // Set the delay until the next image is displayed.
                         metadata = image.Frames.RootFrame.Metadata.GetGifMetadata();
@@ -300,9 +286,12 @@ namespace CardDataDumper.Dumper
             {
                 if (time != 0)
                 {
+                    // We go back if the card has no art and it took the first screenshot
                     yield break;
                 }
             }
+
+            // Wait for the card to change frame
             for(int _ = 0; _< 4; _++) yield return null;
 
             var scrTexture = transparent ? new Texture2D(ConfigHandler.Instance.renderWidth, ConfigHandler.Instance.renderHeight, TextureFormat.ARGB32, false) : new Texture2D(ConfigHandler.Instance.renderWidth, ConfigHandler.Instance.renderHeight, TextureFormat.RGB24, false);
@@ -422,8 +411,7 @@ namespace CardDataDumper.Dumper
         private string GetCardClass(CardInfo card)
         {
             CustomCard card1 = card.GetComponent<CustomCard>();
-            if (card1 != null)
-                card1.Callback();
+            card1?.Callback();
             ClassNameMono mono = card.gameObject.GetComponent<ClassNameMono>();
             return mono == null ? "None" : mono.className;
         }
@@ -496,7 +484,7 @@ namespace CardDataDumper.Dumper
         private static Guid GetDeterministicGuid(string input)
         {
             //use MD5 hash to get a 16-byte hash of the string: 
-            MD5CryptoServiceProvider provider = new MD5CryptoServiceProvider();
+            MD5CryptoServiceProvider provider = new();
             byte[] inputBytes = Encoding.Default.GetBytes(input);
             byte[] hashBytes = provider.ComputeHash(inputBytes); 
 

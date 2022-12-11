@@ -10,7 +10,7 @@ namespace CardDataDumper
     [BepInProcess("Rounds.exe")]
     public class CardDataDumper : BaseUnityPlugin
     {
-        private const string ModId = "ot.dan.rounds.carddatadumper";
+        private const string ModId = "com.Root.Dump";
         private string ModName = System.Text.RegularExpressions.Regex.Replace(CompatibilityModName, "[A-Z]", " $0");
         public const string Version = "1.0.0";
         public const string ModInitials = "";
