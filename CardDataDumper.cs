@@ -1,6 +1,5 @@
 ﻿using BepInEx;
 using CardDataDumper.Config;
-using CardDataDumper.Dumper;
 using HarmonyLib;
 
 namespace CardDataDumper
